@@ -1,0 +1,30 @@
+<form method="POST" action="/add_subjects" >
+    {{ form.hidden_tag() }}
+    <fieldset class="form-group">
+        <legend class='border-bottom mb-4'>Add Subject</legend>
+        <!-- fields -->
+        {% for prof in form %}
+            <div class='form-group'>
+                {% if prof.errors %}
+                    {{prof(class="form-control form-control-lg is-invalid")}}
+                    <div class="invalid-feedback">
+                        {% for error in prof.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% elif prof.type == 'SubmitField' %}
+                {% else %}
+                    {{ prof(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <!-- /fields -->
+    </fieldset>
+        <!-- submit -->
+    <div class='form-group'>
+        {{ form.submit(class="btn btn-lg btn-primary btn-block")}}
+    </div>
+        <!-- /submit -->
+</form>
+

@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block content %}
+{% for event in events %}
+<article class="media content-section">
+  <div class="media-body">
+
+    <div class="article-metadata">
+      <a class="mr-2" href="#">#{{ event.id }}</a>
+      <small class="text-muted">{{ event.time }}</small>
+    </div>
+    <!-- <h2><a class="article-title" href="#">Texto 3</a></h2> -->
+    <p class="article-content">{{ event.action }} {{ event.entry.name }} {{ event.entry.last_name}} as a {{ event.entry.__class__.__name__ }}</p>
+
+  </div>
+</article>
+{% endfor %}
+{% endblock content %}

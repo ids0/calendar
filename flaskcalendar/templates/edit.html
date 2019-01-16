@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block content %}
+
+
+    <form method="GET" action="/edit" >
+    <div class="content-section">
+        <legend class='border-bottom mb-4'>Select what to edit</legend>
+        <fieldset class="form-group">
+            <!-- professors -->
+            <select name="Professor" placeholder="Professor">
+                    <option value="placeholder1" disabled selected>Professors</option>
+                    {% for instance in professorsList %}
+                        <option value="{{instance.id}}">{{instance.name}}</option>
+                    {% endfor %}
+            </select>
+            <!-- /professors -->
+
+            <!-- students -->
+            <select name="Professor" placeholder="Professor">
+                    <option value="placeholder1" disabled selected>Students</option>
+                    {% for instance in studentsList %}
+                        <option value="{{instance.id}}">{{instance.name}}</option>
+                    {% endfor %}
+            </select>
+            <!-- /students -->
+
+
+            <!-- subjects -->
+            <select name="Professor" placeholder="Professor">
+                    <option value="placeholder1" disabled selected>Subjects</option>
+                    {% for instance in subjectsList %}
+                        <option value="{{instance.id}}">{{instance.name}}</option>
+                    {% endfor %}
+            </select>
+            <!-- /subjects -->
+
+        </fieldset>
+        <button class="btn btn-primary" type="edit">Edit</button>
+    </div>
+</form>
+{% endblock content %}
