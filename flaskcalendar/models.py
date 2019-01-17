@@ -57,7 +57,7 @@ class ProfessorSubjects(db.Model):
     def __repr__(self):
         return f"Post('{self.professor_id}', '{self.subject_id}')"
 
-class Task(db.Model):
+class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     professor_id = db.Column(db.Integer, nullable=False)
     student_id = db.Column(db.Integer, nullable=False)
