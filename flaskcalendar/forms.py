@@ -3,7 +3,7 @@ from flask_wtf.file import FileField, FileAllowed
 from flask_login import current_user
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, DateTimeField, IntegerField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
-from flaskcalendar.models import User, Subjects
+from flaskcalendar.models import User, Subject
 
 from flask import flash
 
@@ -50,7 +50,7 @@ class AddSubjectForm(FlaskForm):
     submit = SubmitField('Add Subject')
 
     def validate_subject(self,subject):
-        subject = Subjects.query.filter_by(subject=subject.data).first()
+        subject = Subject.query.filter_by(subject=subject.data).first()
         if subject:
             #FIXME: wtf was this
             flash(f'forms.py don\'t like thi!', 'danger')

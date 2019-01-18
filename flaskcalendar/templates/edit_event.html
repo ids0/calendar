@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+{% block content %}
+<form method="POST" action="" >
+    <div class="content-section">
+        <fieldset class="form-group">
+            <legend class='border-bottom mb-4'>Edit an event</legend>
+
+            <!-- professors -->
+            <select required name="Professor" placeholder="Professor">
+                    
+                    <option value="{{event.professor.id}}" selected>{{event.professor.name}}</option>
+                    {% for instance in professorsList %}
+                        {% if instance.id != event.professor.id %}
+                            <option value="{{instance.id}}">{{instance.name}}</option>
+                        {% endif %}
+                    {% endfor %}
+            </select>
+            <!-- /professors -->
+
+            <!-- students -->
+            <select required name="Student" placeholder="Student">
+                    <option value="{{event.student.id}}" selected>{{event.student.name}}</option>
+                    {% for instance in studentsList %}
+                        {% if instance.id != event.student.id %}
+                            <option value="{{instance.id}}">{{instance.name}}</option>
+                        {% endif %}
+                    {% endfor %}
+            </select>
+            <!-- /students -->
+
+
+            <!-- subjects -->
+            <select required name="Subject" placeholder="Subject">
+                    <option value="{{event.subject.id}}">{{event.subject.subject}}</option>
+                    {% for instance in subjectsList %}
+                        {% if instance.id != event.subject.id %}
+                            <option value="{{instance.id}}">{{instance.subject}}</option>
+                        {% endif %}
+                    {% endfor %}
+            </select>
+            <!-- /subjects -->
+
+            <!-- time -->
+            <input type="datetime-local" value="{{event.time.strftime('%Y-%m-%dT%H:%M')}}" name="Time">
+
+            <!-- /time -->
+            <button class="btn btn-primary" type="submit">Edit</button>
+
+
+
+        </fieldset>
+    </div>
+{% endblock content %}

@@ -1,12 +1,13 @@
 import secrets
 import os
 from PIL import Image
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, abort
 from flaskcalendar import app, db, bcrypt
 from flaskcalendar.forms import RegistrationForm, LoginForm, AddProfessorForm, AddStudentForm, AddSubjectForm, UpdateAccountForm
-from flaskcalendar.models import User,Professor,Student,Subjects,ProfessorSubjects,Event, History
+from flaskcalendar.models import User,Professor, Student, Subject, ProfessorSubjects, Event, History
 from flask_login import login_user, current_user, logout_user, login_required
 from datetime import datetime
+
 
 
 # TODO: Move this to helpers?
@@ -69,6 +70,9 @@ def login():
 @app.route("/history", methods=['GET','POST'])
 @login_required
 def history():
+    # TODO: Change events name for somenthing else
+    # TODO: Conditions for type of object added
+    # TODO: history of edits
     events = History.query.order_by("id desc")
     return render_template('history.html', events = events)
 
@@ -109,7 +113,7 @@ def add():
 @app.route("/add_professors", methods=['GET','POST'])
 def add_professors():
     form = AddProfessorForm()
-    sList = Subjects.query.filter_by()
+    sList = Subject.query.filter_by()
     if form.validate_on_submit():
         instance = Professor(name=form.name.data,last_name = form.last_name.data, email=form.email.data, phone=form.phone.data)
         db.session.add(instance)
@@ -117,7 +121,7 @@ def add_professors():
         addHistory(instance)
         db.session.commit()
 
-        # Link professor to subjects if any selected
+        # Link professor to Subject if any selected
         if request.form.get("Subject"):
             for subject_id in request.form.getlist("Subject"):
                 subject_id = int(subject_id)
@@ -145,7 +149,7 @@ def add_students():
 def add_subjects():
     form = AddSubjectForm()
     if form.validate_on_submit():
-        instance = Subjects(subject=form.subject.data)
+        instance = Subject(subject=form.subject.data)
         addHistory(instance)
         db.session.add(instance)
         db.session.commit()
@@ -156,7 +160,7 @@ def add_subjects():
 @app.route("/link", methods=['GET','POST'])
 def link():
     professorsList = Professor.query
-    subjectsList = Subjects.query
+    subjectsList = Subject.query
     if request.form.getlist("Subject") and request.form.get("Professor"):
         for subject_id in request.form.getlist("Subject"):
             subject_id = int(subject_id)
@@ -175,7 +179,7 @@ def link():
 @app.route("/edit", methods=['GET','POST'])
 def edit():
     professorsList = Professor.query
-    subjectsList = Subjects.query
+    subjectsList = Subject.query
     studentsList = Student.query
 
     if request.args.get('Professor'):
@@ -216,6 +220,7 @@ def edit_professor():
         form.phone.data = instance.phone
         return render_template('edit_professor.html', form=form, instance=instance)
     elif request.args.to_dict() == {}:
+        # TODO: Simple list of professors ready to edit
         professorsList = Professor.query
         return render_template('edit_professor.html', pList = professorsList)
     else:
@@ -268,7 +273,7 @@ def edit_subject():
     # If method is POST
     if form.validate_on_submit():
         subject_id = int(request.form.get("instance_id"))
-        instance = Subjects.query.filter_by(id=subject_id).first()
+        instance = Subject.query.filter_by(id=subject_id).first()
         instance.subject = form.subject.data
         db.session.commit()
         flash(f"{instance.subject}' has been updated",'success')
@@ -278,29 +283,23 @@ def edit_subject():
     # If access via /edit
     elif request.method == 'GET' and request.args.get('Subject'):
         subject_id = int(request.args.get('Subject'))
-        instance = Subjects.query.filter_by(id=subject_id).first()
+        instance = Subject.query.filter_by(id=subject_id).first()
         form.subject.data = instance.subject
         return render_template('edit_subject.html', form=form, instance=instance)
     elif request.args.to_dict() == {}:
-        subjectsList = Subjects.query
+        subjectsList = Subject.query
         return render_template('edit_subject.html', sjList = subjectsList)
     else:
         flash(f"Something went wrong",'danger')
     return redirect(url_for('edit'))
 
-# TODO: List of all events
-@app.route("/events")
-def events():
-    return render_template('events.html', title='Events')
-
-
-# TODO: create events with times
 @app.route("/events/create", methods=['GET','POST'])
 @login_required
 def create_event():
     professorsList = Professor.query
-    subjectsList = Subjects.query
+    subjectsList = Subject.query
     studentsList = Student.query
+    # TODO: What to do with this, maybe add ajax
     ProfessorSubjectsList = ProfessorSubjects.query
     today = datetime.now().strftime("%Y-%m-%dT%H:%M")
 
@@ -309,9 +308,12 @@ def create_event():
         student_id = request.form.get('Student')
         subject_id = request.form.get('Subject')
         time = request.form.get('Time')
+        author_id = int(current_user.id)
+        # TODO: Daytime saving?
         time_dt = datetime.strptime(time,"%Y-%m-%dT%H:%M")
-        instance = Event(professor_id=professor_id, student_id=student_id, subject_id=subject_id, time=time_dt)
+        instance = Event(professor_id=professor_id, student_id=student_id, subject_id=subject_id, author_id=author_id, time=time_dt)
         db.session.add(instance)
+        addHistory(instance)
         db.session.commit()
 
         professor_obj = professorsList.filter_by(id=professor_id).first()
@@ -322,8 +324,90 @@ def create_event():
         return redirect(url_for('create_event'))
     return render_template('create_event.html',today=today, title='Create Event',professorsList=professorsList, subjectsList=subjectsList, studentsList=studentsList, ProfessorSubjectsList = ProfessorSubjectsList)
 
-#TODO: Delete thins
 
-    # TODO: Page for every professor / student / subject with a list of events
+# TODO: List of all events
+@app.route("/events")
+def events():
+    eventsList = Event.query.order_by("id desc")
+    return render_template('events.html',title='Events', eList = eventsList)
+
+
+
+@app.route("/professors")
+def professors():
+    professorsList = Professor.query
+    return render_template('professors.html', pList = professorsList)
+
+@app.route("/professor")
+def professor():
+    if request.method == 'GET' and request.args.get('id'):
+        professor_id = int(request.args.get('id'))
+        eventsList = Event.query.filter_by(professor_id=professor_id).order_by("id desc")
+
+        if eventsList.first():
+            fullName = f"{eventsList.first().professor.name} {eventsList.first().professor.last_name}"
+            instance = eventsList.first().professor
+        else:
+            instance = Professor.query.filter_by(id=professor_id).first()
+            fullName = f"{instance.name} {instance.last_name}"
+
+        return render_template('professor.html',title=f'{fullName} Events', eList = eventsList, fullName=fullName, instance=instance)
+    return redirect(url_for('professors'))
+
+@app.route("/subjects")
+def subjects():
+    subjectsList = Subject.query
+    return render_template('subjects.html', sjList = subjectsList)
+
+@app.route("/subject")
+def subject():
+    if request.method == 'GET' and request.args.get('id'):
+        subject_id = int(request.args.get('id'))
+        eventsList = Event.query.filter_by(subject_id=subject_id).order_by("id desc")
+        return render_template('subject.html',title=f'{eventsList.first().subject.subject} Events', eList = eventsList)
+    return redirect(url_for('subjects'))
+
+@app.route("/students")
+def students():
+    studentsList = Student.query
+    return render_template('students.html', sList = studentsList)
+
+@app.route("/student")
+def student():
+    if request.method == 'GET' and request.args.get('id'):
+        student_id = int(request.args.get('id'))
+        eventsList = Event.query.filter_by(student_id=student_id).order_by("id desc")
+        fullName = f"{eventsList.first().student.name} {eventsList.first().student.last_name}"
+        return render_template('student.html',title=f'{fullName} Events', eList = eventsList, fullName=fullName)
+    return redirect(url_for('students'))
+
+
+#TODO: Delete things
+
+@app.route("/event")
+def event():
+    return redirect(url_for("events"))
+
+@app.route("/event/<int:event_id>")
+def event_id(event_id):
+    event = Event.query.get_or_404(event_id)
+    return render_template('event.html', event = event)
+
+@app.route("/event/<int:event_id>/edit", methods=['GET','POST'])
+@login_required
+def event_update(event_id):
+    event = Event.query.get_or_404(event_id)
+    if event.author != current_user:
+        abort(403)
+    professorsList = Professor.query
+    subjectsList = Subject.query
+    studentsList = Student.query
+    # TODO: What to do with this, maybe add ajax
+    ProfessorSubjectsList = ProfessorSubjects.query
+
+
+    # TODO: EDIT events 18/01/
+
+    return render_template('edit_event.html', title='Edit Event',professorsList=professorsList, subjectsList=subjectsList, studentsList=studentsList, event=event)
 
 

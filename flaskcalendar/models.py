@@ -1,7 +1,6 @@
 from datetime import datetime
 from flaskcalendar import db, login_manager
-from flask_login import UserMixin
-
+from flask_login import UserMixin, current_user
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -14,6 +13,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     password = db.Column(db.String(60), nullable=False)
+    events = db.relationship('Event', backref='author', lazy=True)
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', '{self.image_file}')"
@@ -24,11 +24,16 @@ class Professor(db.Model):
     last_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=True)
     phone = db.Column(db.Integer)
-    # TODO: Relationship to get professor.task or something
-    # subjects_id = db.Column(db.Integer, db.ForeignKey('subjects.id'),nullable=True)
+    events = db.relationship('Event', backref='professor', lazy=True)
+    subjects = db.relationship('ProfessorSubjects', backref='professor', lazy=True)
+
 
     def __repr__(self):
         return f"Professor('{self.name}' '{self.last_name}')"
+
+
+    def fullName(self):
+        return f"{self.name} {self.last_name}"
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -36,38 +41,50 @@ class Student(db.Model):
     last_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), nullable=True)
     phone = db.Column(db.Integer, nullable=True)
-    # subjects_id = db.Column(db.Integer, db.ForeignKey('subjects.id'),nullable=True)
+    events = db.relationship('Event', backref='student', lazy=True)
 
     def __repr__(self):
         return f"Student('{self.name}', '{self.last_name}')"
 
-class Subjects(db.Model):
+    def fullName(self):
+        return f"{self.name} {self.last_name}"
+
+class Subject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     subject = db.Column(db.String(100), nullable=False)
-    # professors = db.relationship('Prof', backref='professors', lazy=True)
+    events = db.relationship('Event', backref='subject', lazy=True)
+    # Subjects.query.first().professorts
+    # 
+    # 
+    professors = db.relationship('ProfessorSubjects', backref='subject', lazy=True)
+
 
     def __repr__(self):
         return f"Subjects('{self.id}', '{self.subject}')"
 
 class ProfessorSubjects(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    professor_id = db.Column(db.Integer, nullable=False)
-    subject_id = db.Column(db.Integer, nullable=False)
+    professor_id = db.Column(db.Integer, db.ForeignKey('professor.id'), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
+    # TODO: relationship?
 
     def __repr__(self):
-        return f"Post('{self.professor_id}', '{self.subject_id}')"
+        return f"ProfessorSubjects('{self.professor_id}', '{self.subject_id}')"
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    professor_id = db.Column(db.Integer, nullable=False)
-    student_id = db.Column(db.Integer, nullable=False)
-    subject_id = db.Column(db.Integer, nullable=False)
+    professor_id = db.Column(db.Integer, db.ForeignKey('professor.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
+    author_id =  db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    # TODO: Relationship to get task.proffesor or something
-    # subjects_id = db.Column(db.Integer, db.ForeignKey('subjects.id'),nullable=True)
+    # TODO: boolean field if didn't notify yet, default true
 
     def __repr__(self):
-        return f"Post('{self.professor_id}', '{self.student_id}', '{self.subject_id}')"
+        return f"Event('{self.professor_id}' '{self.student_id}', '{self.subject_id}', {self.time}')"
+
+    def __srt__(self):
+        return f"Event('{self.professor.name}' '{self.student.name}', '{self.subject.subject}, {self.time}')"
 
 class History(db.Model):
     id = db.Column(db.Integer, primary_key=True)

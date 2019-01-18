@@ -4,23 +4,7 @@
         <fieldset class="form-group">
             <legend class='border-bottom mb-4'>{{ fullName }} Events</legend>
 
-            <fieldset>
-                <div class="content-section" style="background-color:white">
-                    <div class="media">
-                    <img class="rounded-circle account-img" src="{{  url_for('static',filename='pics/default.jpg') }}">
-                    <div class="media-body">
-                        <h2 class="account-heading">{{ instance.fullName() }}</h2>
-                        <p class="text-secondary">{{instance.email}}</p>
-                        <p class="text-secondary">{{instance.phone}}</p>
-                    </div>
-                </div>
-            </fieldset>
             {% for event in eList%}
-
-
-
-
-
             <div class="card">
                 <div class="card-body">
                     {{event.id}} - {{event.professor.name}} {{event.professor.last_name}} - {{event.student.name}} {{event.student.last_name}} - {{event.subject.subject}} - {{event.time}}
