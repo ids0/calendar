@@ -15,12 +15,8 @@
                     </div>
                 </div>
             </fieldset>
-            {% for event in eList%}
 
-
-
-
-
+            {% for event in instance.events %}
             <div class="card">
                 <div class="card-body">
                     {{event.id}} - {{event.professor.name}} {{event.professor.last_name}} - {{event.student.name}} {{event.student.last_name}} - {{event.subject.subject}} - {{event.time}}

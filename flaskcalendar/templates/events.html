@@ -2,12 +2,17 @@
 {% block content %}
     <div class="content-section">
         <fieldset class="form-group">
-            <legend class='border-bottom mb-4'>Events</legend>
+            <legend class='border-bottom mb-4'>Events <a  class="btn btn-success mb-1 align-text-right" href="{{url_for('create_event')}}">Add New Event</a></legend>
 
             {% for event in eList%}
             <div class="card">
                 <div class="card-body">
-                    <a href="{{ url_for('event_id', event_id=event.id) }}">{{event.id}}</a> - {{event.professor.name}} {{event.professor.last_name}} - {{event.student.name}} {{event.student.last_name}} - {{event.subject.subject}} - {{event.time}}
+                    <a href="{{ url_for('event_id', event_id=event.id) }}">#{{event.id}}</a> - {{event.professor.name}} {{event.professor.last_name}} - {{event.student.name}} {{event.student.last_name}} - {{event.subject.subject}} - {{event.time}}
+                    {% if current_user %}
+                        {% if current_user == event.author%}
+                            <a class ="btn btn-secondary btn-sm mt-1 mb-1" href="{{url_for('event_update', event_id=event.id)}}">Edit</a>
+                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
                 

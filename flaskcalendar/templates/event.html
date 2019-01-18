@@ -5,15 +5,56 @@
   <div class="media-body">
     <div class="article-metadata">
       <a class="mr-2" href="#">{{ event.id }}</a>
-      <small class="text-muted">{{ event.professor }}</small>
+      <small class="text-muted">{{ event.professor.fullName() }}</small>
+      {% if event.author == current_user %}
+        <div>
+          <a class ="btn btn-secondary btn-sm mt-1 mb-1" href="{{url_for('event_update', event_id=event.id)}}">Edit</a>
+          <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal" >Delete</button>
+        </div>
+      {% endif %}
     </div>
     <h2 class="article-title">{{ event.time }}</h2>
-    <p class="article-content">{{ event.student }} - {{ event.subject }}</p>
+    <p class="article-content">{{ event.student.fullName() }} - {{ event.subject.subject }}</p>
   </div>
 </article>
 
-{% endblock content %}
+  <!-- Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Delete Event?</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
 
 
+              <div class="card" style="width: 20rem;">
+                  <div class="card-body">
+                    <h5 class="card-title">Event ID: {{ event.id}}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Time: {{ event.time }}</h6>
+                    <p class="card-text">Professor: {{ event.professor.fullName()}}</p>
+                    <p class="card-text">Student: {{ event.student.fullName()}}</p>
+                    <p class="card-text">Subject:  {{ event.subject.subject }}</p>
+                  </div>
+                </div>
 
+              
+              
+              
+              
+              
+            </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <form action="{{ url_for('event_delete', event_id=event.id) }}" method="POST">
+              <input class="btn btn-danger" type="submit" value="Delete">
+            </form>
+          </div>
+        </div>
+      </div>
+  </div>
 
+  {% endblock content %}

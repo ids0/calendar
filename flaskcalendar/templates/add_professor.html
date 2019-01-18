@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+<fieldset class="form-group">
+
+        <form method="POST" action="/add_professor" >
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <legend class='border-bottom mb-4'>Add Professor</legend>
+                <!-- fields -->
+                {% for formField in form %}
+                    <div class='form-group'>
+                        {% if formField.errors %}
+                            {{formField(class="form-control form-control-lg is-invalid")}}
+                            <div class="invalid-feedback">
+                                {% for error in formField.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% elif formField.type == 'SubmitField' %}
+                        {% else %}
+                            {{ formField(class="form-control form-control-lg") }}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <!-- subjects -->
+                <select multiple name="Subject" placeholder="Subject">
+                    <option value="placeholder1" disabled selected>Subject</option>
+                    {% for subj in subjectsList %}
+                        <option value="{{subj.id}}">{{subj.subject}}</option>
+                    {% endfor %}
+                </select>
+                <!-- /subjects -->
+                <!-- /fields -->
+            </fieldset>
+                <!-- submit -->
+            <div class='form-group'>
+                {{ form.submit(class="btn btn-lg btn-primary btn-block")}}
+            </div>
+                <!-- /submit -->
+        </form>
+        
+</fieldset>
+</div>
+
+{% endblock content %}
+
+

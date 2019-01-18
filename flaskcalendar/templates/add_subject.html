@@ -1,7 +1,11 @@
-<form method="POST" action="/add_students" >
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section">
+<fieldset class="form-group">
+<form method="POST" action="/add_subject" >
     {{ form.hidden_tag() }}
     <fieldset class="form-group">
-        <legend class='border-bottom mb-4'>Add Student</legend>
+        <legend class='border-bottom mb-4'>Add Subject</legend>
         <!-- fields -->
         {% for prof in form %}
             <div class='form-group'>
@@ -28,3 +32,9 @@
         <!-- /submit -->
 </form>
 
+
+        
+</fieldset>
+</div>
+
+{% endblock content %}
