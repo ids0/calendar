@@ -6,29 +6,34 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
 
-application = app = Flask(__name__)
-app.config.from_object(Config)
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
-login_manager = LoginManager(app)
+db = SQLAlchemy()
+bcrypt = Bcrypt()
+login_manager = LoginManager()
 login_manager.login_view = 'users.login'
 login_manager.login_message_category = 'info'
 
-mail = Mail(app)
+mail = Mail()
 
 
+def create_app(config_class=Config):
+    application = app = Flask(__name__)
+    app.config.from_object(Config)
 
+    from flaskcalendar.users.routes import usersAPP
+    from flaskcalendar.main.routes import mainAPP
+    from flaskcalendar.events.routes import eventsAPP
+    from flaskcalendar.professors.routes import professorsAPP
+    from flaskcalendar.students.routes import studentsAPP
+    from flaskcalendar.subjects.routes import subjectsAPP
+    app.register_blueprint(usersAPP)
+    app.register_blueprint(mainAPP)
+    app.register_blueprint(eventsAPP)
+    app.register_blueprint(professorsAPP)
+    app.register_blueprint(studentsAPP)
+    app.register_blueprint(subjectsAPP)
+    db.init_app(application)
+    bcrypt.init_app(app)
+    login_manager.init_app(app)
+    mail.init_app(app)
 
-from flaskcalendar.users.routes import usersAPP
-from flaskcalendar.main.routes import mainAPP
-from flaskcalendar.events.routes import eventsAPP
-from flaskcalendar.professors.routes import professorsAPP
-from flaskcalendar.students.routes import studentsAPP
-from flaskcalendar.subjects.routes import subjectsAPP
-
-app.register_blueprint(usersAPP)
-app.register_blueprint(mainAPP)
-app.register_blueprint(eventsAPP)
-app.register_blueprint(professorsAPP)
-app.register_blueprint(studentsAPP)
-app.register_blueprint(subjectsAPP)
+    return app
