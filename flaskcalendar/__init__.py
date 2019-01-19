@@ -25,12 +25,14 @@ def create_app(config_class=Config):
     from flaskcalendar.professors.routes import professorsAPP
     from flaskcalendar.students.routes import studentsAPP
     from flaskcalendar.subjects.routes import subjectsAPP
+    from flaskcalendar.errors.handlers import errorsAPP
     app.register_blueprint(usersAPP)
     app.register_blueprint(mainAPP)
     app.register_blueprint(eventsAPP)
     app.register_blueprint(professorsAPP)
     app.register_blueprint(studentsAPP)
     app.register_blueprint(subjectsAPP)
+    app.register_blueprint(errorsAPP)
     db.init_app(application)
     bcrypt.init_app(app)
     login_manager.init_app(app)
