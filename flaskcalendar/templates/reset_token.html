@@ -8,7 +8,7 @@
         <fieldset class="form-group">
             <!-- bootstrap -->
             <center><img class="mb-4" src="{{ url_for('static',filename='img/calendar.svg')}}" alt="" width="72" height="72"></center>
-            <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
+            <h1 class="h3 mb-3 font-weight-normal">Reset Password</h1>
             <!-- forms -->
              {% for field in form %}
                     <div class='form-group'>
@@ -31,17 +31,13 @@
                 {% endfor %}
             <!-- /forms -->
             <p class="text-muted">&copy; 2018-2020</p>
-            <small class="text-muted">
-                <a href="{{ url_for('users.reset_request') }}">Forgot Password?</a>
-            </small>
             <!-- /bootstrap -->
-            <!-- submit -->
+             <!-- submit -->
             <div class='form-group'>
                 {{ form.submit(class="btn btn-lg btn-primary btn-block") }}
             </div>
             <!-- /submit -->
         </fieldset>
-
     </form>
 </div>
 <div class='border-top pt-3'>

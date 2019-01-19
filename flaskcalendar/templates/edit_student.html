@@ -31,7 +31,7 @@
         <input type="hidden" name="instance_id" value="{{instance.id}}"/>
     </form>
     <div class='border-top pt-3'>
-            <small class="text-muted">See all <a class="" href="{{ url_for('edit_student') }}">{{ instance.__class__.__name__}}s</a></small>
+            <small class="text-muted">See all <a class="" href="{{ url_for('students.edit_student') }}">{{ instance.__class__.__name__}}s</a></small>
         </div>
 </div>
 <!-- /students -->
@@ -44,7 +44,7 @@
         <div class="card-body">
           <h5 class="card-title">{{instance.name}} {{instance.last_name}} </h5>
           <p class="card-text">{{instance.email}}-{{instance.phone}}</p>
-          <a href="{{url_for('edit_student',Student=instance.id)}}" class="card-link btn btn-outline-info">Edit</a>
+          <a href="{{url_for('students.edit_student',Student=instance.id)}}" class="card-link btn btn-outline-info">Edit</a>
           <a href="#" class="card-link">Another link</a>
         </div>
       </div>
