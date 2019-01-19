@@ -1,30 +1,25 @@
 {% extends "layout.html" %}
 {% block content %}
 {% for date in dates%}
-<legend class='border-bottom mb-4'>{{date.strftime('%a %d-%m-%Y')}}</legend>
-    {% for event in events %}
-
-        {% if event.time.date() == date %}
-
-        <article class="media content-section">
-        
-          <div class="media-body">
-        
-            <div class="article-metadata">
-              <a class="mr-2" href="{{ url_for('event_id', event_id=event.id) }}">#{{ event.id }}</a>
-              <small class="text-muted">{{ event.time.strftime('%H:%M') }}</small>
-            </div>
-            <!-- <h2><a class="article-title" href="#">Texto 3</a></h2> -->
-            <p class="article-content"><ul>
-             <li>Professor: {{ event.professor.fullName() }} </li>
-             <li>Student: {{ event.student.fullName() }} </li>
-             <li>Subject: {{ event.subject.subject}} </li>
-            </ul></p>
-        
+  <legend class='border-bottom mb-4'>{{date.strftime('%a %d-%m-%Y')}}</legend>
+  {% for event in events %}
+    {% if event.time.date() == date %}
+      <article class="media content-section">
+        <div class="media-body">
+          <div class="article-metadata">
+            <a class="mr-2" href="{{ url_for('event_id', event_id=event.id) }}">#{{ event.id }}</a>
+            <small class="text-muted">{{ event.time.strftime('%H:%M') }}</small>
           </div>
-        </article>
-        {% endif %}
-    {% endfor %}
+          <!-- <h2><a class="article-title" href="#">Texto 3</a></h2> -->
+          <p class="article-content"><ul>
+            <li>Professor: {{ event.professor.fullName() }}</li>
+            <li>Student: {{ event.student.fullName() }}</li>
+            <li>Subject: {{ event.subject.subject}}</li>
+          </ul></p>
+        </div>
+      </article>
+    {% endif %}
+  {% endfor %}
 {% endfor %}
 {% endblock content %}
 

@@ -5,50 +5,42 @@ from flask import render_template, url_for, flash, redirect, request, abort
 from flaskcalendar import app, db, bcrypt
 from flaskcalendar.forms import RegistrationForm, LoginForm, AddProfessorForm, AddStudentForm, AddSubjectForm, UpdateAccountForm
 from flaskcalendar.models import User,Professor, Student, Subject, ProfessorSubjects, Event, History
+from flaskcalendar.helpers import addToHistory, save_pictures
 from flask_login import login_user, current_user, logout_user, login_required
 from datetime import datetime, timedelta
 import itertools
 
-# TODO: Move this to helpers?
-def addToHistory(instance,action):
-    hist = History(time = datetime.utcnow(), entry=(instance), action=action)
-    db.session.add(hist)
-    db.session.commit()
 
-
-def save_pictures(form_picture):
-    random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = str(current_user.id) + '_' + random_hex + f_ext
-    picture_path = os.path.join(app.root_path,'static\pics', picture_fn)
-
-    output_size = (125,125)
-    i = Image.open(form_picture)
-    i.thumbnail(output_size)
-    i.save(picture_path)
-    return picture_fn
+# TODO: Delete things
+# TODO: Search page with parameters
+# TODO: Create events only with professor's subjects
+# TODO: Link with students / professors for events at the same time
+    # TODO: Boolean for Event with True/False for confirmations
 
 
 @app.route("/")
 @app.route("/home")
 def home():
-    # Get dates already in order
+    # Query dates already in order
     events = Event.query.order_by("time")
     dates = []
     time_delta = timedelta(hours=3)
     for a, b in itertools.combinations(events, 2):
-        if (a.student == b.student or a.professor == b.professor) and (-time_delta < a.time - b.time  < time_delta):
-            flash(f"event {a.id} and {b.id} ",'danger')
+        if -time_delta < a.time - b.time  < time_delta:
+            if a.student == b.student:
+                flash(f"Student: {a.student.fullName()} has 2 events close to each other, event {a.id} and {b.id} ",'danger')
+            elif a.professor == b.professor:
+                flash(f"Professor: {a.professor.fullName()} has 2 events close to each other, event {a.id} and {b.id} ",'danger')
         if a.time.date() not in dates:
             dates.append(a.time.date())
         if b.time.date() not in dates:
             dates.append(b.time.date())
-
     return render_template('home.html', events= events, dates=dates)
 
 @app.route("/about")
 def about():
     return render_template('about.html')
+
 
 @app.route("/register", methods=['GET','POST'])
 def register():
@@ -63,6 +55,7 @@ def register():
         flash(f'Account created for {form.username.data}!', 'success')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
+
 
 @app.route("/login", methods=['GET','POST'])
 def login():
@@ -79,6 +72,7 @@ def login():
             flash('Login Unsuccessful!', 'danger')
     return render_template('login.html', title='Login', form=form)
 
+
 @app.route("/history", methods=['GET','POST'])
 @login_required
 def history():
@@ -90,6 +84,7 @@ def history():
 def logout():
     logout_user()
     return redirect(url_for('home'))
+
 
 @app.route("/account", methods=['GET','POST'])
 @login_required
@@ -114,6 +109,7 @@ def account():
         form.username.data = current_user.username
         form.email.data = current_user.email
     return render_template('account.html', title='Account', image_file=image_file, form=form)
+
 
 @app.route("/add", methods=['GET','POST'])
 @login_required
@@ -141,6 +137,7 @@ def add_professor():
         return redirect(url_for('professors'))
     return render_template('add_professor.html',form=form, subjectsList=sList)
 
+
 @app.route("/add_student", methods=['GET','POST'])
 def add_student():
     form = AddStudentForm()
@@ -153,6 +150,7 @@ def add_student():
         return redirect(url_for('students'))
     return render_template('add_student.html',form=form)
 
+
 @app.route("/add_subject", methods=['GET','POST'])
 def add_subject():
     form = AddSubjectForm()
@@ -164,6 +162,7 @@ def add_subject():
         flash(f'{form.subject.data} added!', 'success')
         return redirect(url_for('subjects'))
     return render_template('add_subject.html', form=form)
+
 
 @app.route("/link", methods=['GET','POST'])
 def link():
@@ -193,13 +192,12 @@ def edit():
         return redirect(url_for('edit_subject', Subject=request.args.get('Subject')))
     elif request.args.get('Student'):
         return redirect(url_for('edit_student', Student=request.args.get('Student')))
-
     return render_template('edit.html', professorsList=professorsList, subjectsList=subjectsList, studentsList=studentsList)
+
 
 @app.route("/edit_professor", methods=['GET','POST'])
 def edit_professor():
     form = AddProfessorForm()
-
     if form.validate_on_submit():
         professor_id = int(request.form.get("instance_id"))
         instance = Professor.query.filter_by(id=professor_id).first()
@@ -209,10 +207,8 @@ def edit_professor():
         instance.phone = form.phone.data
         addToHistory(instance,'edit')
         db.session.commit()
-        flash(f"{instance.name} {instance.last_name}' account has been updated",'success')
-        # POST/ GET redirect better to use redirect instead update
-        # TODO: Redirect to previous page
-        return redirect(url_for('edit'))
+        flash(f"{instance.fullName()} account has been updated",'success')
+        return redirect(url_for('professors'))
     elif request.method == 'GET' and request.args.get('Professor'):
         professor_id = int(request.args.get('Professor'))
         instance = Professor.query.filter_by(id=professor_id).first()
@@ -221,19 +217,12 @@ def edit_professor():
         form.email.data = instance.email
         form.phone.data = instance.phone
         return render_template('edit_professor.html', form=form, instance=instance)
-    elif request.args.to_dict() == {}:
-        # TODO: Simple list of professors ready to edit
-        professorsList = Professor.query
-        return render_template('edit_professor.html', pList = professorsList)
-    else:
-        flash(f"Something went wrong",'danger')
-    return redirect(url_for('edit'))
+    return redirect(url_for('professors'))
+
 
 @app.route("/edit_student", methods=['GET','POST'])
 def edit_student():
     form = AddStudentForm()
-
-    # If method POST
     if form.validate_on_submit():
         student_id = int(request.form.get("instance_id"))
         instance = Student.query.filter_by(id=student_id).first()
@@ -243,11 +232,8 @@ def edit_student():
         instance.phone = form.phone.data
         addToHistory(instance,'edit')
         db.session.commit()
-        flash(f"{instance.name} {instance.last_name}' account has been updated",'success')
-        # POST/ GET redirect better to use redirect instead update
-        # TODO: Redirect to previous page
-        return redirect(url_for('edit'))
-    # If access via /edit
+        flash(f"{instance.fullName()} account has been updated",'success')
+        return redirect(url_for('students'))
     elif request.method == 'GET' and request.args.get('Student'):
         student_id = int(request.args.get('Student'))
         instance = Student.query.filter_by(id=student_id).first()
@@ -256,18 +242,12 @@ def edit_student():
         form.email.data = instance.email
         form.phone.data = instance.phone
         return render_template('edit_student.html', form=form, instance=instance)
-    elif request.args.to_dict() == {}:
-        studentsList = Student.query
-        return render_template('edit_student.html', sList = studentsList)
-    else:
-        flash(f"Something went wrong",'danger')
-    return redirect(url_for('edit'))
+    return redirect(url_for('students'))
+
 
 @app.route("/edit_subject", methods=['GET','POST'])
 def edit_subject():
     form = AddSubjectForm()
-
-    # If method is POST
     if form.validate_on_submit():
         subject_id = int(request.form.get("instance_id"))
         instance = Subject.query.filter_by(id=subject_id).first()
@@ -275,58 +255,42 @@ def edit_subject():
         addToHistory(instance,'edit')
         db.session.commit()
         flash(f"{instance.subject}' has been updated",'success')
-        # POST/ GET redirect better to use redirect instead update
-        # TODO: Redirect to previous page
-        return redirect(url_for('edit'))
-    # If access via /edit
+        return redirect(url_for('subjects'))
     elif request.method == 'GET' and request.args.get('Subject'):
         subject_id = int(request.args.get('Subject'))
         instance = Subject.query.filter_by(id=subject_id).first()
         form.subject.data = instance.subject
         return render_template('edit_subject.html', form=form, instance=instance)
-    elif request.args.to_dict() == {}:
-        subjectsList = Subject.query
-        return render_template('edit_subject.html', sjList = subjectsList)
-    else:
-        flash(f"Something went wrong",'danger')
-    return redirect(url_for('edit'))
+    return redirect(url_for('subjects'))
+
 
 @app.route("/events/create", methods=['GET','POST'])
 @login_required
 def create_event():
-    professorsList = Professor.query
-    subjectsList = Subject.query
-    studentsList = Student.query
+    professorsList, subjectsList, studentsList = Professor.query, Subject.query, Student.query
+    time = datetime.now().strftime("%Y-%m-%dT%H:%M")
     # TODO: What to do with this, maybe add ajax
-    ProfessorSubjectsList = ProfessorSubjects.query
-    today = datetime.now().strftime("%Y-%m-%dT%H:%M")
-
+    # ProfessorSubjectsList = ProfessorSubjects.query
     if request.method == 'POST':
-        professor_id = request.form.get('Professor')
-        student_id = request.form.get('Student')
-        subject_id = request.form.get('Subject')
+        professor_id, student_id, subject_id = request.form.get('Professor'), request.form.get('Student'), request.form.get('Subject')
         time = request.form.get('Time')
         author_id = int(current_user.id)
-        # TODO: Daytime saving?
+        # TODO: Daytime saving ???
         time_dt = datetime.strptime(time,"%Y-%m-%dT%H:%M")
         instance = Event(professor_id=professor_id, student_id=student_id, subject_id=subject_id, author_id=author_id, time=time_dt)
         db.session.add(instance)
         addToHistory(instance,'add')
         db.session.commit()
-
-        professor_obj = professorsList.filter_by(id=professor_id).first()
-        student_obj = studentsList.filter_by(id=student_id).first()
-        subject_obj = subjectsList.filter_by(id=subject_id).first()
-
+        professor_obj, student_obj, subject_obj  = professorsList.filter_by(id=professor_id).first(), studentsList.filter_by(id=student_id).first(), subjectsList.filter_by(id=subject_id).first()
         flash(f"Event created for {professor_obj.fullName()} with {student_obj.fullName()} of {subject_obj.subject} at {instance.time}",'success')
         return redirect(url_for('create_event'))
-    return render_template('create_event.html',today=today, title='Create Event',professorsList=professorsList, subjectsList=subjectsList, studentsList=studentsList, ProfessorSubjectsList = ProfessorSubjectsList)
+    return render_template('create_event.html',time=time, title='Create Event',professorsList=professorsList, subjectsList=subjectsList, studentsList=studentsList, ProfessorSubjectsList = ProfessorSubjectsList)
 
 
 @app.route("/events")
 def events():
     eventsList = Event.query.order_by("id desc")
-    return render_template('events.html',title='Events', eList = eventsList)
+    return render_template('events.html', title='Events', eList = eventsList)
 
 
 @app.route("/professor")
@@ -334,9 +298,9 @@ def professor():
     if request.method == 'GET' and request.args.get('id'):
         professor_id = int(request.args.get('id'))
         instance = Professor.query.filter_by(id=professor_id).first()
-
         return render_template('professor.html',title=f'{instance.fullName()} Events', instance=instance)
     return redirect(url_for('professors'))
+
 
 @app.route("/subject")
 def subject():
@@ -345,6 +309,7 @@ def subject():
         instance = Subject.query.filter_by(id=subject_id).first()
         return render_template('subject.html',title=f'{instance.subject} Events',instance=instance)
     return redirect(url_for('subjects'))
+
 
 @app.route("/student")
 def student():
@@ -355,11 +320,11 @@ def student():
     return redirect(url_for('students'))
 
 
-
 @app.route("/professors")
 def professors():
     professorsList = Professor.query
     return render_template('professors.html', pList = professorsList)
+
 
 @app.route("/subjects")
 def subjects():
@@ -372,9 +337,6 @@ def students():
     studentsList = Student.query
     return render_template('students.html', sList = studentsList)
 
-# TODO: Delete things
-# TODO: Search page with parameters
-# TODO: Create events only with subjects of professor
 
 @app.route("/event")
 def event():
@@ -391,12 +353,9 @@ def event_update(event_id):
     instance = Event.query.get_or_404(event_id)
     if instance.author != current_user:
         abort(403)
-
-    professorsList = Professor.query
-    subjectsList = Subject.query
-    studentsList = Student.query
-
+    professorsList, subjectsList, studentsList = Professor.query, Subject.query, Student.query
     if request.method == 'POST' and request.values:
+        # Can make this part shorter but less clear
         instance.professor_id = int(request.form.get('Professor'))
         instance.student_id = int(request.form.get('Student'))
         instance.subject_id = int(request.form.get('Subject'))
@@ -407,7 +366,7 @@ def event_update(event_id):
         db.session.commit()
         flash(f"Event {instance.id} has been updated correctly",'success')
         return redirect(url_for('event_id', event_id=instance.id))
-
+    # TODO: Delete button in edit page
     return render_template('edit_event.html', title='Edit Event',professorsList=professorsList, subjectsList=subjectsList, studentsList=studentsList, event=instance)
 
 @app.route("/event/<int:event_id>/delete", methods=['POST'])
