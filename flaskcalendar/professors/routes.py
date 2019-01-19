@@ -27,7 +27,7 @@ def add_professor():
                 db.session.commit()
         flash(f'{instance.name} {instance.last_name} added as a {instance.__class__.__name__}!', 'success')
         return redirect(url_for('professors.professors'))
-    return render_template('add_professor.html',form=form, subjectsList=sList)
+    return render_template('professors/add_professor.html',form=form, subjectsList=sList)
 
 
 
@@ -53,7 +53,7 @@ def edit_professor():
         form.last_name.data = instance.last_name
         form.email.data = instance.email
         form.phone.data = instance.phone
-        return render_template('edit_professor.html', form=form, instance=instance)
+        return render_template('professors/edit_professor.html', form=form, instance=instance)
     return redirect(url_for('professors.professors'))
 
 @professorsAPP.route("/professor")
@@ -61,12 +61,12 @@ def professor():
     if request.method == 'GET' and request.args.get('id'):
         professor_id = int(request.args.get('id'))
         instance = Professor.query.filter_by(id=professor_id).first()
-        return render_template('professor.html',title=f'{instance.fullName()} Events', instance=instance)
+        return render_template('professors/professor.html',title=f'{instance.fullName()} Events', instance=instance)
     return redirect(url_for('professors.professors'))
 
 
 @professorsAPP.route("/professors")
 def professors():
     professorsList = Professor.query
-    return render_template('professors.html', pList = professorsList)
+    return render_template('professors/professors.html', pList = professorsList)
 

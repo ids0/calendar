@@ -26,24 +26,24 @@ def home():
             dates.append(a.time.date())
         if b.time.date() not in dates:
             dates.append(b.time.date())
-    return render_template('home.html', events= events, dates=dates)
+    return render_template('main/home.html', events= events, dates=dates)
 
 @mainAPP.route("/about")
 def about():
-    return render_template('about.html')
+    return render_template('main/about.html')
 
 
 @mainAPP.route("/history", methods=['GET','POST'])
 def history():
     # Get events in desc order, first most recent
     events = History.query.order_by("id desc")
-    return render_template('history.html', events=events)
+    return render_template('main/history.html', events=events)
 
 
 @mainAPP.route("/add", methods=['GET','POST'])
 @login_required
 def add():
-    return render_template('add.html', title='Add')
+    return render_template('main/add.html', title='Add')
 
 @mainAPP.route("/link", methods=['GET','POST'])
 def link():
@@ -62,7 +62,7 @@ def link():
                 db.session.add(instance)
                 db.session.commit()
                 flash(f'{professorsList.filter_by(id=professor_id).first().fullName()} linked to {subjectsList.filter_by(id=subject_id).first().subject}!', 'success')
-    return render_template('link.html', professorsList=professorsList, subjectsList=subjectsList)
+    return render_template('main/link.html', professorsList=professorsList, subjectsList=subjectsList)
 
 @mainAPP.route("/edit", methods=['GET','POST'])
 def edit():
@@ -73,5 +73,5 @@ def edit():
         return redirect(url_for('subjects.edit_subject', Subject=request.args.get('Subject')))
     elif request.args.get('Student'):
         return redirect(url_for('students.edit_student', Student=request.args.get('Student')))
-    return render_template('edit.html', professorsList=professorsList, subjectsList=subjectsList, studentsList=studentsList)
+    return render_template('main/edit.html', professorsList=professorsList, subjectsList=subjectsList, studentsList=studentsList)
 

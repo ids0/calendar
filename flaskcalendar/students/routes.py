@@ -21,20 +21,20 @@ def add_student():
         db.session.commit()
         flash(f'{instance.name} {instance.last_name} added as a {instance.__class__.__name__}!', 'success')
         return redirect(url_for('students.students'))
-    return render_template('add_student.html',form=form)
+    return render_template('students/add_student.html',form=form)
 
 @studentsAPP.route("/student")
 def student():
     if request.method == 'GET' and request.args.get('id'):
         student_id = int(request.args.get('id'))
         instance = Student.query.filter_by(id=student_id).first()
-        return render_template('student.html',title=f'{instance.fullName()} Events',instance=instance)
+        return render_template('students/student.html',title=f'{instance.fullName()} Events',instance=instance)
     return redirect(url_for('students.students'))
 
 @studentsAPP.route("/students")
 def students():
     studentsList = Student.query
-    return render_template('students.html', sList = studentsList)
+    return render_template('students/students.html', sList = studentsList)
 
 
 @studentsAPP.route("/edit_student", methods=['GET','POST'])
@@ -59,5 +59,5 @@ def edit_student():
         form.last_name.data = instance.last_name
         form.email.data = instance.email
         form.phone.data = instance.phone
-        return render_template('edit_student.html', form=form, instance=instance)
+        return render_template('students/edit_student.html', form=form, instance=instance)
     return redirect(url_for('students.students'))

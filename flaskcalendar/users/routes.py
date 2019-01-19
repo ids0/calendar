@@ -21,7 +21,7 @@ def register():
         db.session.commit()
         flash(f'Account created for {form.username.data}!', 'success')
         return redirect(url_for('users.login'))
-    return render_template('register.html', title='Register', form=form)
+    return render_template('users/register.html', title='Register', form=form)
 
 
 @usersAPP.route("/login", methods=['GET','POST'])
@@ -37,7 +37,7 @@ def login():
             return redirect(next_page) if next_page else redirect(url_for('main.home'))
         else:
             flash('Login Unsuccessful!', 'danger')
-    return render_template('login.html', title='Login', form=form)
+    return render_template('users/login.html', title='Login', form=form)
 
 
 @usersAPP.route("/logout")
@@ -68,7 +68,7 @@ def account():
         # Fill form with current info
         form.username.data = current_user.username
         form.email.data = current_user.email
-    return render_template('account.html', title='Account', image_file=image_file, form=form)
+    return render_template('users/account.html', title='Account', image_file=image_file, form=form)
 
 
 
@@ -82,7 +82,7 @@ def reset_request():
         send_reset_email(user)
         flash('An email has been sent with instruction to reset your password', 'info')
         return redirect(url_for('users.login'))
-    return render_template('reset_request.html', title='Reset Password', form=form)
+    return render_template('users/reset_request.html', title='Reset Password', form=form)
 
 
 @usersAPP.route("/reset_password/<token>", methods=['GET','POST'])
@@ -100,4 +100,4 @@ def reset_token(token):
         db.session.commit()
         flash(f'Your password has been updated', 'success')
         return redirect(url_for('users.login'))
-    return render_template('reset_token.html', title='Reset Password', form=form)
+    return render_template('users/reset_token.html', title='Reset Password', form=form)

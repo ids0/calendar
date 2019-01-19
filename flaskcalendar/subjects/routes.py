@@ -11,7 +11,7 @@ subjectsAPP = Blueprint('subjects', __name__)
 @subjectsAPP.route("/subjects")
 def subjects():
     subjectsList = Subject.query
-    return render_template('subjects.html', sjList = subjectsList)
+    return render_template('subjects/subjects.html', sjList = subjectsList)
 
 
 @subjectsAPP.route("/add_subject", methods=['GET','POST'])
@@ -25,7 +25,7 @@ def add_subject():
         db.session.commit()
         flash(f'{form.subject.data} added!', 'success')
         return redirect(url_for('subjects.subjects'))
-    return render_template('add_subject.html', form=form)
+    return render_template('subjects/add_subject.html', form=form)
 
 
 @subjectsAPP.route("/edit_subject", methods=['GET','POST'])
@@ -45,7 +45,7 @@ def edit_subject():
         instance = Subject.query.filter_by(id=subject_id).first()
         form.subject.data = instance.subject
         return render_template('edit_subject.html', form=form, instance=instance)
-    return redirect(url_for('subjects.subjects'))
+    return redirect(url_for('subjects/subjects.subjects'))
 
 
 @subjectsAPP.route("/subject")
@@ -54,6 +54,6 @@ def subject():
         subject_id = int(request.args.get('id'))
         instance = Subject.query.filter_by(id=subject_id).first()
         return render_template('subject.html',title=f'{instance.subject} Events',instance=instance)
-    return redirect(url_for('subjects.subjects'))
+    return redirect(url_for('subjects/subjects.subjects'))
 
 
