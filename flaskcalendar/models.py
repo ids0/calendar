@@ -1,14 +1,9 @@
-# TODO: Delete things
 # TODO: Search page with parameters
 # TODO: Create events only with professor's subjects
 # TODO: Link with students / professors for alerts
-
-    # TODO: Only user that added professors/students/subjects can user them
-
 # TODO: Clean up HTML
 # TODO: Subtemplates
 # TODO: README.md
-
 
 
 # pylint: disable=E1101
@@ -17,6 +12,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flaskcalendar import db, login_manager
 from flask import current_app
 from flask_login import UserMixin, current_user
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -84,6 +80,7 @@ class Student(db.Model):
     def fullName(self):
         return f"{self.name} {self.last_name}"
 
+
 class Subject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     subject = db.Column(db.String(100), nullable=False)
@@ -97,6 +94,7 @@ class Subject(db.Model):
     def __repr__(self):
         return f"Subjects('{self.id}', '{self.subject}')"
 
+
 class ProfessorSubjects(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     professor_id = db.Column(db.Integer, db.ForeignKey('professor.id'), nullable=False)
@@ -105,6 +103,7 @@ class ProfessorSubjects(db.Model):
 
     def __repr__(self):
         return f"ProfessorSubjects('{self.professor_id}', '{self.subject_id}')"
+
 
 class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -122,6 +121,7 @@ class Event(db.Model):
 
     def __srt__(self):
         return f"Event('{self.professor.name}' '{self.student.name}', '{self.subject.subject}, {self.time}')"
+
 
 class History(db.Model):
     id = db.Column(db.Integer, primary_key=True)
