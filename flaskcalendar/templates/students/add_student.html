@@ -1,40 +1,36 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="content-section">
-<fieldset class="form-group">
-
-<form method="POST" action="/add_student" >
-    {{ form.hidden_tag() }}
     <fieldset class="form-group">
-        <legend class='border-bottom mb-4'>Add Student</legend>
-        <!-- fields -->
-        {% for prof in form %}
-            <div class='form-group'>
-                {% if prof.errors %}
-                    {{prof(class="form-control form-control-lg is-invalid")}}
-                    <div class="invalid-feedback">
-                        {% for error in prof.errors %}
-                            <span>{{ error }}</span>
-                        {% endfor %}
+        <form method="POST" action="/add_student" >
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <legend class='border-bottom mb-4'>Add Student</legend>
+                <!-- fields -->
+                {% for field in form %}
+                    <div class='form-group'>
+                        {% if field.errors %}
+                            {{field(class="form-control form-control-lg is-invalid")}}
+                            <div class="invalid-feedback">
+                                {% for error in field.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% elif field.type == 'SubmitField' %}
+                        {% else %}
+                            {{ field(class="form-control form-control-lg") }}
+                        {% endif %}
                     </div>
-                {% elif prof.type == 'SubmitField' %}
-                {% else %}
-                    {{ prof(class="form-control form-control-lg") }}
-                {% endif %}
+                {% endfor %}
+                <!-- /fields -->
+            </fieldset>
+                <!-- submit -->
+            <div class='form-group'>
+                {{ form.submit(class="btn btn-lg btn-primary btn-block")}}
             </div>
-        {% endfor %}
-
-        <!-- /fields -->
+                <!-- /submit -->
+        </form>   
     </fieldset>
-        <!-- submit -->
-    <div class='form-group'>
-        {{ form.submit(class="btn btn-lg btn-primary btn-block")}}
-    </div>
-        <!-- /submit -->
-</form>
-
-        
-</fieldset>
 </div>
 
 {% endblock content %}

@@ -12,6 +12,4 @@ class AddSubjectForm(FlaskForm):
     def validate_subject(self,subject):
         subject = Subject.query.filter_by(subject=subject.data).first()
         if subject:
-            #FIXME: wtf was this
-            flash(f'forms.py don\'t like thi!', 'danger')
             raise ValidationError('Subject already exists!')

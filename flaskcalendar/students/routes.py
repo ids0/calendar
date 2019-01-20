@@ -5,7 +5,7 @@ from flaskcalendar.models import Student
 from flaskcalendar.students.forms import AddStudentForm
 from flask_login import login_required, current_user
 from flaskcalendar.main.utils import addToHistory
-
+from flaskcalendar.users.utils import isAuthor
 studentsAPP = Blueprint('students', __name__)
 
 
@@ -24,17 +24,22 @@ def add_student():
         return redirect(url_for('students.students'))
     return render_template('students/add_student.html',form=form)
 
+
 @studentsAPP.route("/student")
 def student():
     if request.method == 'GET' and request.args.get('id'):
-        student_id = int(request.args.get('id'))
-        instance = Student.query.filter_by(id=student_id).first()
-        return render_template('students/student.html',title=f'{instance.fullName()} Events',instance=instance)
+        student_id = int(request.args.get('id')) 
+        instance = Student.query.filter_by(id=student_id, author_id=current_user.id).first()
+        if isAuthor(instance):
+            return render_template('students/student.html',title=f'{instance.fullName()} Events',instance=instance)
     return redirect(url_for('students.students'))
+
 
 @studentsAPP.route("/students")
 def students():
-    studentsList = Student.query
+    studentsList = []
+    if current_user.is_authenticated:
+        studentsList = Student.query.filter_by(author_id=current_user.id)
     return render_template('students/students.html', sList = studentsList)
 
 
@@ -44,31 +49,37 @@ def edit_student():
     form = AddStudentForm()
     if form.validate_on_submit():
         student_id = int(request.form.get("instance_id"))
-        instance = Student.query.filter_by(id=student_id).first()
-        instance.name = form.name.data
-        instance.last_name  = form.last_name.data
-        instance.email  = form.email.data
-        instance.phone = form.phone.data
-        addToHistory(instance,'edit')
-        db.session.commit()
-        flash(f"{instance.fullName()} account has been updated",'success')
-        return redirect(url_for('students.students'))
+        instance = Student.query.filter_by(id=student_id, author_id=current_user.id).first()
+        if isAuthor(instance):
+            instance.name = form.name.data
+            instance.last_name  = form.last_name.data
+            instance.email  = form.email.data
+            instance.phone = form.phone.data
+            addToHistory(instance,'edit')
+            db.session.commit()
+            flash(f"{instance.fullName()} account has been updated",'success')
+            return redirect(url_for('students.students'))
     elif request.method == 'GET' and request.args.get('Student'):
         student_id = int(request.args.get('Student'))
-        instance = Student.query.filter_by(id=student_id).first()
-        form.name.data = instance.name
-        form.last_name.data = instance.last_name
-        form.email.data = instance.email
-        form.phone.data = instance.phone
-        return render_template('students/edit_student.html', form=form, instance=instance)
+        instance = Student.query.filter_by(id=student_id, author_id=current_user.id).first()
+        if isAuthor(instance):
+            form.name.data = instance.name
+            form.last_name.data = instance.last_name
+            form.email.data = instance.email
+            form.phone.data = instance.phone
+            return render_template('students/edit_student.html', form=form, instance=instance)
     return redirect(url_for('students.students'))
+
 
 @studentsAPP.route("/students/<int:student_id>/delete", methods=['POST'])
 @login_required
 def student_delete(student_id):
     instance = Student.query.get_or_404(student_id)
-    addToHistory(instance,'delete')
-    db.session.delete(instance)
-    db.session.commit()
-    flash(f"Student has been deleted correctly",'success')
+    if isAuthor(instance):
+        addToHistory(instance,'delete')
+        db.session.delete(instance)
+        db.session.commit()
+        flash(f"Student has been deleted correctly",'success')
+    else:
+        flash(f"You're not the author of this Student",'warning')
     return redirect(url_for('students.students'))

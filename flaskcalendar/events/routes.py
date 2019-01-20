@@ -6,17 +6,16 @@ from flaskcalendar.models import Professor, Student, Subject, Event
 from flask_login import current_user, login_required
 from flaskcalendar.main.utils import addToHistory
 from flaskcalendar import db
-
+from flaskcalendar.users.utils import isAuthor
 eventsAPP = Blueprint('events', __name__)
 
 
 @eventsAPP.route("/events/create", methods=['GET','POST'])
 @login_required
 def create_event():
-    professorsList, subjectsList, studentsList = Professor.query, Subject.query, Student.query
+    professorsList, subjectsList, studentsList = Professor.query.filter_by(author_id=current_user.id), Subject.query.filter_by(author_id=current_user.id), Student.query.filter_by(author_id=current_user.id)
     time = datetime.now().strftime("%Y-%m-%dT%H:%M")
-    # TODO: What to do with this, maybe add ajax
-    # ProfessorSubjectsList = ProfessorSubjects.query
+    # ProfessorSubjectsList = ProfessorSubjects.query # TODO: What to do with this, maybe add ajax
     if request.method == 'POST':
         professor_id, student_id, subject_id = request.form.get('Professor'), request.form.get('Student'), request.form.get('Subject')
         time = request.form.get('Time')
@@ -35,26 +34,33 @@ def create_event():
 
 @eventsAPP.route("/events")
 def events():
-    eventsList = Event.query.order_by("id desc")
-    return render_template('events/events.html', title='Events', eList = eventsList)
+    eventsList =[]
+    if current_user.is_authenticated:
+        eventsList = Event.query.filter_by(author_id=current_user.id).order_by("id desc")
+    return render_template('events/events.html', title='Events', eList=eventsList)
 
 
 @eventsAPP.route("/event")
 def event():
     return redirect(url_for("events"))
 
+
 @eventsAPP.route("/event/<int:event_id>")
+@login_required
 def event_id(event_id):
-    event = Event.query.get_or_404(event_id)
-    return render_template('events/event.html', event = event)
+    instance = Event.query.get_or_404(event_id)
+    if isAuthor(instance):
+        return render_template('events/event.html', event=instance)
+    abort(403)
+
 
 @eventsAPP.route("/event/<int:event_id>/edit", methods=['GET','POST'])
 @login_required
 def event_update(event_id):
     instance = Event.query.get_or_404(event_id)
-    if instance.author != current_user:
+    if not isAuthor(instance):
         abort(403)
-    professorsList, subjectsList, studentsList = Professor.query, Subject.query, Student.query
+    professorsList, subjectsList, studentsList = Professor.query.filter_by(author_id=current_user.id), Subject.query.filter_by(author_id=current_user.id), Student.query.filter_by(author_id=current_user.id)
     if request.method == 'POST' and request.values:
         # Can make this part shorter but less clear
         instance.professor_id = int(request.form.get('Professor'))
@@ -68,7 +74,8 @@ def event_update(event_id):
         flash(f"Event {instance.id} has been updated correctly",'success')
         return redirect(url_for('events.event_id', event_id=instance.id))
     # TODO: Delete button in edit page
-    return render_template('events/edit_event.html', title='Edit Event',professorsList=professorsList, subjectsList=subjectsList, studentsList=studentsList, event=instance)
+    return render_template('events/edit_event.html', title='Edit Event', professorsList=professorsList, subjectsList=subjectsList, studentsList=studentsList, event=instance)
+
 
 @eventsAPP.route("/event/<int:event_id>/delete", methods=['POST'])
 @login_required

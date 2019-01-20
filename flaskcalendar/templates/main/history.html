@@ -9,7 +9,7 @@
       <small class="text-muted">{{ event.time }}</small>
     </div>
     <!-- <h2><a class="article-title" href="#">Texto 3</a></h2> -->
-    <p class="article-content">{{ event.action }} {{ event.entry.name }} {{ event.entry.last_name}} - {{ event.entry.__class__.__name__ }}</p>
+    <p class="article-content">{{ event.action }} {{ event.entry.fullName() }} - {{ event.entry.__class__.__name__ }}</p>
 
   </div>
 </article>

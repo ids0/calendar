@@ -10,8 +10,8 @@
 {% for instance in pList %}
     <div class="card" style="width: 20rem;">
         <div class="card-body">
-          <h5 class="card-title">{{instance.name}} {{instance.last_name}} </h5>
-          <p class="card-text">{{instance.email}}-{{instance.phone}}</p>
+          <h5 class="card-title">{{ instance.fullName() }}</h5>
+          <p class="card-text">{{instance.email}} - {{instance.phone}}</p>
           <a href="{{url_for('professors.edit_professor',Professor=instance.id)}}" class="card-link btn btn-outline-info">Edit</a>
           <a href="{{url_for('professors.professor',id=instance.id)}}" class="card-link btn btn-secondary">View Events</a>
         </div>

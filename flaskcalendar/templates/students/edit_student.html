@@ -10,7 +10,7 @@
             {% for formField in form %}
                 <div class='form-group'>
                     {% if formField.errors %}
-                        {{formField(class="form-control form-control-lg is-invalid")}}
+                        {{ formField(class="form-control form-control-lg is-invalid") }}
                         <div class="invalid-feedback">
                             {% for error in formField.errors %}
                                 <span>{{ error }}</span>

@@ -4,7 +4,6 @@
     <div class="content-section">
         <fieldset class="form-group">
             <legend class='border-bottom mb-4'>Edit an event</legend>
-
             <!-- professors -->
             <select required name="Professor" placeholder="Professor">
                     
@@ -16,7 +15,6 @@
                     {% endfor %}
             </select>
             <!-- /professors -->
-
             <!-- students -->
             <select required name="Student" placeholder="Student">
                     <option value="{{event.student.id}}" selected>{{event.student.name}}</option>
@@ -27,8 +25,6 @@
                     {% endfor %}
             </select>
             <!-- /students -->
-
-
             <!-- subjects -->
             <select required name="Subject" placeholder="Subject">
                     <option value="{{event.subject.id}}">{{event.subject.subject}}</option>
@@ -39,15 +35,44 @@
                     {% endfor %}
             </select>
             <!-- /subjects -->
-
             <!-- time -->
             <input type="datetime-local" value="{{event.time.strftime('%Y-%m-%dT%H:%M')}}" name="Time">
-
             <!-- /time -->
             <button class="btn btn-primary" type="submit">Edit</button>
-
-
-
+            <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal" >Delete</button>
         </fieldset>
     </div>
+</form>
+<!-- Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Delete Event?</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="card" style="width: 20rem;">
+                <div class="card-body">
+                    <h5 class="card-title">Event ID: {{ event.id}}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Time: {{ event.time }}</h6>
+                    <p class="card-text">Professor: {{ event.professor.fullName()}}</p>
+                    <p class="card-text">Student: {{ event.student.fullName()}}</p>
+                    <p class="card-text">Subject:  {{ event.subject.subject }}</p>
+                </div>
+                </div>
+            </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <form action="{{ url_for('events.event_delete', event_id=event.id) }}" method="POST">
+            <input class="btn btn-danger" type="submit" value="Delete">
+            </form>
+        </div>
+        </div>
+    </div>
+ </div>
+<!-- /Modal -->
+
 {% endblock content %}

@@ -18,7 +18,6 @@ def save_picture(form_picture):
     i.save(picture_path)
     return picture_fn
 
-
 def send_reset_email(user):
     token = user.get_reset_token()
     msg = Message('Password Reset Request', sender='noreply@test-calendar.com', recipients=[user.email])
@@ -26,3 +25,9 @@ def send_reset_email(user):
 {url_for('users.reset_token', token=token, _external=True)}
 '''
     mail.send(msg)
+
+def isAuthor(instance,current_user=current_user):
+    if instance and instance.id == current_user.id:
+        return True
+    else:
+        return False

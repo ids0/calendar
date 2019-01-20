@@ -33,9 +33,7 @@ class User(db.Model, UserMixin):
     professors = db.relationship('Professor', backref='author', lazy=True, cascade="all, delete-orphan")
     students = db.relationship('Student', backref='author', lazy=True, cascade="all, delete-orphan")
     subjects = db.relationship('Subject', backref='author', lazy=True, cascade="all, delete-orphan")
-
-
-
+    history = db.relationship('History', backref='author', lazy=True, cascade="all, delete-orphan")
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
@@ -93,6 +91,9 @@ class Subject(db.Model):
     professors = db.relationship('ProfessorSubjects', backref='subject', lazy=True, cascade="all, delete-orphan")
     author_id =  db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
+    def fullName(self):
+        return f"{self.subject}"
+
     def __repr__(self):
         return f"Subjects('{self.id}', '{self.subject}')"
 
@@ -127,6 +128,7 @@ class History(db.Model):
     entry = db.Column(db.PickleType, nullable=False)
     time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     action = db.Column(db.String(15), nullable=False,  default='change')
+    author_id =  db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
         return f"History('{self.id}', '{self.entry}','{self.time}')"

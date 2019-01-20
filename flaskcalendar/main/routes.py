@@ -2,7 +2,7 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint
 from flaskcalendar import db
 from flaskcalendar.models import Professor, Student, Subject, ProfessorSubjects, Event, History
-from flask_login import login_required
+from flask_login import login_required, current_user
 from datetime import timedelta
 import itertools
 
@@ -12,21 +12,26 @@ mainAPP = Blueprint('main', __name__)
 @mainAPP.route("/")
 @mainAPP.route("/home")
 def home():
-    # Query dates already in order
-    events = Event.query.order_by("time")
+    events =[]
     dates = []
-    time_delta = timedelta(hours=3)
-    for a, b in itertools.combinations(events, 2):
-        if -time_delta < a.time - b.time  < time_delta:
-            if a.student == b.student:
-                flash(f"Student: {a.student.fullName()} has 2 events close to each other, event {a.id} and {b.id} ",'danger')
-            elif a.professor == b.professor:
-                flash(f"Professor: {a.professor.fullName()} has 2 events close to each other, event {a.id} and {b.id} ",'danger')
-        if a.time.date() not in dates:
-            dates.append(a.time.date())
-        if b.time.date() not in dates:
-            dates.append(b.time.date())
-    return render_template('main/home.html', events= events, dates=dates)
+    if current_user.is_authenticated:
+        # Query dates already in order
+        events = Event.query.filter_by(author_id=current_user.id).order_by("time")
+        time_delta = timedelta(hours=3)
+        for a, b in itertools.combinations(events, 2):
+            if -time_delta < a.time - b.time  < time_delta:
+                if a.student == b.student:
+                    flash(f"Student: {a.student.fullName()} has 2 events close to each other, event {a.id} and {b.id} ",'danger')
+                elif a.professor == b.professor:
+                    flash(f"Professor: {a.professor.fullName()} has 2 events close to each other, event {a.id} and {b.id} ",'danger')
+            if a.time.date() not in dates:
+                dates.append(a.time.date())
+            if b.time.date() not in dates:
+                dates.append(b.time.date())
+        # If only 1 event in events, itertools fails to add dates
+        if events.first() and not dates:
+            dates.append(events.first().time.date())
+    return render_template('main/home.html', events=events, dates=dates)
 
 @mainAPP.route("/about")
 def about():
@@ -34,9 +39,10 @@ def about():
 
 
 @mainAPP.route("/history", methods=['GET','POST'])
+@login_required
 def history():
     # Get events in desc order, first most recent
-    events = History.query.order_by("id desc")
+    events = History.query.filter_by(author_id=current_user.id).order_by("id desc")
     return render_template('main/history.html', events=events)
 
 
@@ -46,9 +52,10 @@ def add():
     return render_template('main/add.html', title='Add')
 
 @mainAPP.route("/link", methods=['GET','POST'])
+@login_required
 def link():
-    professorsList = Professor.query
-    subjectsList = Subject.query
+    professorsList = Professor.query.filter_by(author_id=current_user.id)
+    subjectsList = Subject.query.filter_by(author_id=current_user.id)
     if request.form.getlist("Subject") and request.form.get("Professor"):
         # If multiple subjects selected
         for subject_id in request.form.getlist("Subject"):
@@ -64,9 +71,12 @@ def link():
                 flash(f'{professorsList.filter_by(id=professor_id).first().fullName()} linked to {subjectsList.filter_by(id=subject_id).first().subject}!', 'success')
     return render_template('main/link.html', professorsList=professorsList, subjectsList=subjectsList)
 
+
 @mainAPP.route("/edit", methods=['GET','POST'])
 def edit():
-    professorsList, subjectsList, studentsList = Professor.query, Subject.query, Student.query
+    professorsList, subjectsList, studentsList = [], [], []
+    if current_user.is_authenticated:
+        professorsList, subjectsList, studentsList = Professor.query.filter_by(author_id=current_user.id), Subject.query.filter_by(author_id=current_user.id), Student.query.filter_by(author_id=current_user.id)
     if request.args.get('Professor'):
         return redirect(url_for('professors.edit_professor', Professor=request.args.get('Professor')))
     elif request.args.get('Subject'):
