@@ -1,14 +1,11 @@
 {% extends "layout.html" %}
 {% block content %}
-
-{% if form %}
 <!-- students -->
 <div class="content-section">
-    <!-- <form method="POST" action="/edit_student" > -->
-        <form method="POST" action="" >
+    <form method="POST" action="" >
         {{ form.hidden_tag() }}
         <fieldset class="form-group">
-            <legend class='border-bottom mb-4'>Edit {{instance.name }} {{instance.last_name }}</legend>
+            <legend class='border-bottom mb-4'>Edit {{instance.fullName() }}</legend>
             <!-- fields -->
             {% for formField in form %}
                 <div class='form-group'>
@@ -27,29 +24,45 @@
             {% endfor %}
             <!-- /fields -->
             <button class="btn btn-primary" type="submit">Edit</button>
+            <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
         </fieldset>
         <input type="hidden" name="instance_id" value="{{instance.id}}"/>
     </form>
     <div class='border-top pt-3'>
-            <small class="text-muted">See all <a class="" href="{{ url_for('students.edit_student') }}">{{ instance.__class__.__name__}}s</a></small>
-        </div>
+        <small class="text-muted">See all <a class="" href="{{ url_for('students.students') }}">{{ instance.__class__.__name__}}s</a></small>
+    </div>
 </div>
 <!-- /students -->
-{% else %}
 
-<div class="content-section">
-        <legend class='border-bottom mb-4'>Student List</legend>
-{% for instance in sList %}
-    <div class="card" style="width: 20rem;">
-        <div class="card-body">
-          <h5 class="card-title">{{instance.name}} {{instance.last_name}} </h5>
-          <p class="card-text">{{instance.email}}-{{instance.phone}}</p>
-          <a href="{{url_for('students.edit_student',Student=instance.id)}}" class="card-link btn btn-outline-info">Edit</a>
-          <a href="#" class="card-link">Another link</a>
+  <!-- Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Delete Student?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <div class="card" style="width: 20rem;">
+                <div class="card-body">
+                  <h5 class="card-title">Student ID: {{ instance.id}}</h5>
+                  <h6 class="card-subtitle mb-2 text-muted">Name: {{ instance.fullName() }}</h6>
+                  <p class="card-text">Mail: {{ instance.email }}</p>
+
+                </div>
+              </div>
+          </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <form action="{{ url_for('students.student_delete', student_id=instance.id) }}" method="POST">
+            <input class="btn btn-danger" type="submit" value="Delete">
+          </form>
         </div>
       </div>
-<br>
-{% endfor %}
+    </div>
 </div>
-{% endif %}
+<!-- /Modal -->
+
 {% endblock content %}

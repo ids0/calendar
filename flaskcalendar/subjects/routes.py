@@ -3,7 +3,7 @@ from flask import render_template, url_for, flash, redirect, request, Blueprint
 from flaskcalendar import db
 from flaskcalendar.models import Subject
 from flaskcalendar.subjects.forms import AddSubjectForm
-from flask_login import login_required
+from flask_login import login_required, current_user
 from flaskcalendar.main.utils import addToHistory
 
 subjectsAPP = Blueprint('subjects', __name__)
@@ -19,7 +19,8 @@ def subjects():
 def add_subject():
     form = AddSubjectForm()
     if form.validate_on_submit():
-        instance = Subject(subject=form.subject.data)
+        author_id = int(current_user.id)
+        instance = Subject(subject=form.subject.data, author_id=author_id)
         db.session.add(instance)
         addToHistory(instance,'add')
         db.session.commit()
@@ -44,7 +45,7 @@ def edit_subject():
         subject_id = int(request.args.get('Subject'))
         instance = Subject.query.filter_by(id=subject_id).first()
         form.subject.data = instance.subject
-        return render_template('edit_subject.html', form=form, instance=instance)
+        return render_template('subjects/edit_subject.html', form=form, instance=instance)
     return redirect(url_for('subjects/subjects.subjects'))
 
 
@@ -55,5 +56,15 @@ def subject():
         instance = Subject.query.filter_by(id=subject_id).first()
         return render_template('subject.html',title=f'{instance.subject} Events',instance=instance)
     return redirect(url_for('subjects/subjects.subjects'))
+
+@subjectsAPP.route("/subjects/<int:subject_id>/delete", methods=['POST'])
+@login_required
+def subject_delete(subject_id):
+    instance = Subject.query.get_or_404(subject_id)
+    addToHistory(instance,'delete')
+    db.session.delete(instance)
+    db.session.commit()
+    flash(f"Subject has been deleted correctly",'success')
+    return redirect(url_for('subjects.subjects'))
 
 

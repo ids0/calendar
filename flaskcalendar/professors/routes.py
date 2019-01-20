@@ -2,7 +2,7 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint
 from flaskcalendar import db
 from flaskcalendar.models import Professor, Subject, ProfessorSubjects
-from flask_login import login_required
+from flask_login import login_required, current_user
 from flaskcalendar.professors.forms import AddProfessorForm
 from flaskcalendar.main.utils import addToHistory
 
@@ -14,7 +14,8 @@ def add_professor():
     form = AddProfessorForm()
     sList = Subject.query.filter_by()
     if form.validate_on_submit():
-        instance = Professor(name=form.name.data, last_name=form.last_name.data, email=form.email.data, phone=form.phone.data)
+        author_id = int(current_user.id)
+        instance = Professor(name=form.name.data, last_name=form.last_name.data, email=form.email.data, phone=form.phone.data, author_id=author_id)
         db.session.add(instance)
         # Have to add before commit, otherwise db get corrupted
         addToHistory(instance,'add')
@@ -70,3 +71,13 @@ def professors():
     professorsList = Professor.query
     return render_template('professors/professors.html', pList = professorsList)
 
+
+@professorsAPP.route("/professors/<int:professor_id>/delete", methods=['POST'])
+@login_required
+def professor_delete(professor_id):
+    instance = Professor.query.get_or_404(professor_id)
+    addToHistory(instance,'delete')
+    db.session.delete(instance)
+    db.session.commit()
+    flash(f"Professor has been deleted correctly",'success')
+    return redirect(url_for('professors.professors'))

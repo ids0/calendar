@@ -1,7 +1,5 @@
 {% extends "layout.html" %}
 {% block content %}
-
-{% if form %}
 <!-- subjects -->
 <div class="content-section">
     <form method="POST" action="" >
@@ -26,29 +24,44 @@
             {% endfor %}
             <!-- /fields -->
             <button class="btn btn-primary" type="submit">Edit</button>
+            <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
         </fieldset>
         <input type="hidden" name="instance_id" value="{{instance.id}}"/>
     </form>
     <div class='border-top pt-3'>
-            <small class="text-muted">See all <a class="" href="{{ url_for('subjects.edit_subject') }}">{{ instance.__class__.__name__}}s</a></small>
-        </div>
+        <small class="text-muted">See all <a class="" href="{{ url_for('subjects.edit_subject') }}">{{ instance.__class__.__name__}}s</a></small>
+    </div>
 </div>
 <!-- /subjects -->
-{% else %}
 
-<div class="content-section">
-        <legend class='border-bottom mb-4'>Subjects List</legend>
-{% for instance in sjList %}
-    <div class="card" style="width: 20rem;">
-        <div class="card-body">
-          <h5 class="card-title">{{instance.subject}} </h5>
-          <p class="card-text"></p>
-          <a href="{{url_for('subjects.edit_subject',Subject=instance.id)}}" class="card-link btn btn-outline-info">Edit</a>
-          <a href="#" class="card-link">Another link</a>
+  <!-- Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Delete Subject?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            <div class="card" style="width: 20rem;">
+                <div class="card-body">
+                  <h5 class="card-title">Subject ID: {{ instance.id}}</h5>
+                  <h6 class="card-subtitle mb-2 text-muted"></h6>
+                  <p class="card-text">Subject Name: {{ instance.subject }}</p>
+
+                </div>
+              </div>
+          </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <form action="{{ url_for('subjects.subject_delete', subject_id=instance.id) }}" method="POST">
+            <input class="btn btn-danger" type="submit" value="Delete">
+          </form>
         </div>
       </div>
-<br>
-{% endfor %}
+    </div>
 </div>
-{% endif %}
+<!-- /Modal -->
 {% endblock content %}

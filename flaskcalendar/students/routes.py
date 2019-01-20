@@ -3,7 +3,7 @@ from flask import render_template, url_for, flash, redirect, request, Blueprint
 from flaskcalendar import db
 from flaskcalendar.models import Student
 from flaskcalendar.students.forms import AddStudentForm
-from flask_login import login_required
+from flask_login import login_required, current_user
 from flaskcalendar.main.utils import addToHistory
 
 studentsAPP = Blueprint('students', __name__)
@@ -15,7 +15,8 @@ studentsAPP = Blueprint('students', __name__)
 def add_student():
     form = AddStudentForm()
     if form.validate_on_submit():
-        instance = Student(name=form.name.data, last_name=form.last_name.data, email=form.email.data, phone=form.phone.data)
+        author_id = int(current_user.id)
+        instance = Student(name=form.name.data, last_name=form.last_name.data, email=form.email.data, phone=form.phone.data, author_id=author_id)
         db.session.add(instance)
         addToHistory(instance,'add')
         db.session.commit()
@@ -60,4 +61,14 @@ def edit_student():
         form.email.data = instance.email
         form.phone.data = instance.phone
         return render_template('students/edit_student.html', form=form, instance=instance)
+    return redirect(url_for('students.students'))
+
+@studentsAPP.route("/students/<int:student_id>/delete", methods=['POST'])
+@login_required
+def student_delete(student_id):
+    instance = Student.query.get_or_404(student_id)
+    addToHistory(instance,'delete')
+    db.session.delete(instance)
+    db.session.commit()
+    flash(f"Student has been deleted correctly",'success')
     return redirect(url_for('students.students'))
