@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 {% block content %}
-<form method="POST" action="" >
+<form method="GET" action="" >
     <div class="content-section">
         <fieldset class="form-group">
-            <legend class='border-bottom mb-4'>Create an event</legend>
+            <legend class='border-bottom mb-4'>Seach an event</legend>
             <!-- professors -->
-            <select required name="Professor" placeholder="Professor">
+            <select name="Professor" placeholder="Professor">
                 <option value="" selected>Professors</option>
                 {% for instance in professorsList %}
                     <option value="{{instance.id}}">{{instance.name}}</option>
@@ -13,7 +13,7 @@
             </select>
             <!-- /professors -->
             <!-- students -->
-            <select required name="Student" placeholder="Student">
+            <select name="Student" placeholder="Student">
                 <option value="" selected>Students</option>
                 {% for instance in studentsList %}
                     <option value="{{instance.id}}">{{instance.name}}</option>
@@ -21,7 +21,7 @@
             </select>
             <!-- /students -->
             <!-- subjects -->
-            <select required name="Subject" placeholder="Subject">
+            <select name="Subject" placeholder="Subject">
                 <option value="" selected>Subjects</option>
                 {% for instance in subjectsList %}
                     <option value="{{instance.id}}">{{instance.subject}}</option>
@@ -31,7 +31,7 @@
             <!-- time -->
             <input type="datetime-local" value="{{time}}" name="Time">
             <!-- /time -->
-            <button class="btn btn-primary" type="submit">Create</button>
+            <button class="btn btn-primary" type="submit">Search</button>
         </fieldset>
     </div>
 {% endblock content %}

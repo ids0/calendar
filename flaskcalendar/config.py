@@ -1,9 +1,14 @@
-
 import json
-import os
-path = os.path.join(os.pardir,'config.json')
-with open(path) as config_file:
-    config = json.load(config_file)
+from sys import platform
+
+if platform == "linux" or platform == "linux2":
+    with open("/etc/config.json") as config_file:
+        config = json.load(config_file)
+elif platform == "win32":
+    import os
+    path = os.path.join(os.pardir,'config.json')
+    with open(path) as config_file:
+        config = json.load(config_file)
 
 class Config():
     SECRET_KEY = config.get('SECRET_KEY')

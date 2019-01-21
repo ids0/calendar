@@ -1,7 +1,7 @@
 # TODO: Search page with parameters
 # TODO: Create events only with professor's subjects
 # TODO: Link with students / professors for alerts
-# TODO: Clean up HTML
+# TODO: Cleanup HTML
 # TODO: Subtemplates
 # TODO: README.md
 

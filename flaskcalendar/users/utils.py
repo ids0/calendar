@@ -27,7 +27,7 @@ def send_reset_email(user):
     mail.send(msg)
 
 def isAuthor(instance,current_user=current_user):
-    if instance and instance.id == current_user.id:
+    if instance and instance.author_id == current_user.id:
         return True
     else:
         return False

@@ -3,7 +3,7 @@ from flask import render_template, url_for, flash, redirect, request, Blueprint
 from flaskcalendar import db
 from flaskcalendar.models import Professor, Student, Subject, ProfessorSubjects, Event, History
 from flask_login import login_required, current_user
-from datetime import timedelta
+from datetime import datetime, timedelta
 import itertools
 
 mainAPP = Blueprint('main', __name__)
@@ -18,18 +18,19 @@ def home():
         # Query dates already in order
         events = Event.query.filter_by(author_id=current_user.id).order_by("time")
         time_delta = timedelta(hours=3)
+        tomorrow = datetime.now().date() + timedelta(days=-1)
         for a, b in itertools.combinations(events, 2):
             if -time_delta < a.time - b.time  < time_delta:
                 if a.student == b.student:
                     flash(f"Student: {a.student.fullName()} has 2 events close to each other, event {a.id} and {b.id} ",'danger')
                 elif a.professor == b.professor:
                     flash(f"Professor: {a.professor.fullName()} has 2 events close to each other, event {a.id} and {b.id} ",'danger')
-            if a.time.date() not in dates:
+            if a.time.date() not in dates and a.time.date() > tomorrow:
                 dates.append(a.time.date())
-            if b.time.date() not in dates:
+            if b.time.date() not in dates and b.time.date() > tomorrow:
                 dates.append(b.time.date())
         # If only 1 event in events, itertools fails to add dates
-        if events.first() and not dates:
+        if events.first() and not dates and events.first().time.date() > tomorrow:
             dates.append(events.first().time.date())
     return render_template('main/home.html', events=events, dates=dates)
 
