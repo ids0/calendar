@@ -8,7 +8,6 @@ import itertools
 
 mainAPP = Blueprint('main', __name__)
 
-
 @mainAPP.route("/")
 @mainAPP.route("/home")
 def home():
@@ -18,19 +17,19 @@ def home():
         # Query dates already in order
         events = Event.query.filter_by(author_id=current_user.id).order_by("time")
         time_delta = timedelta(hours=3)
-        tomorrow = datetime.now().date() + timedelta(days=-1)
+        yesterday = datetime.now().date() + timedelta(days=-1)
         for a, b in itertools.combinations(events, 2):
             if -time_delta < a.time - b.time  < time_delta:
                 if a.student == b.student:
                     flash(f"Student: {a.student.fullName()} has 2 events close to each other, event {a.id} and {b.id} ",'danger')
                 elif a.professor == b.professor:
                     flash(f"Professor: {a.professor.fullName()} has 2 events close to each other, event {a.id} and {b.id} ",'danger')
-            if a.time.date() not in dates and a.time.date() > tomorrow:
+            if a.time.date() not in dates and a.time.date() > yesterday:
                 dates.append(a.time.date())
-            if b.time.date() not in dates and b.time.date() > tomorrow:
+            if b.time.date() not in dates and b.time.date() > yesterday:
                 dates.append(b.time.date())
         # If only 1 event in events, itertools fails to add dates
-        if events.first() and not dates and events.first().time.date() > tomorrow:
+        if events.first() and not dates and events.first().time.date() > yesterday:
             dates.append(events.first().time.date())
     return render_template('main/home.html', events=events, dates=dates)
 
