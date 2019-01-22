@@ -79,7 +79,6 @@ def event_update(event_id):
         db.session.commit()
         flash(f"Event {instance.id} has been updated correctly",'success')
         return redirect(url_for('events.event_id', event_id=instance.id))
-    # TODO: Delete button in edit page
     return render_template('events/edit_event.html', title='Edit Event', professorsList=professorsList, subjectsList=subjectsList, studentsList=studentsList, event=instance)
 
 
@@ -94,23 +93,3 @@ def event_delete(event_id):
     db.session.commit()
     flash(f"Event has been deleted correctly",'success')
     return redirect(url_for('events.events'))
-
-@eventsAPP.route("/events/search", methods=['GET','POST'])
-@login_required
-def search_event():
-    professorsList, subjectsList, studentsList = Professor.query.filter_by(author_id=current_user.id), Subject.query.filter_by(author_id=current_user.id), Student.query.filter_by(author_id=current_user.id)
-    time = datetime.now()-SERVER_TIME_CORRECTION
-    time = time.strftime("%Y-%m-%dT%H:%M")
-    # ProfessorSubjectsList = ProfessorSubjects.query # TODO: What to do with this, maybe add ajax
-    if request.method == 'GET' and request.values:
-        professor_id, student_id, subject_id = request.args.get('Professor'), request.args.get('Student'), request.args.get('Subject')
-        time = request.args.get('Time')
-        author_id = int(current_user.id)
-        # TODO: Daytime saving ???
-        time_dt = datetime.strptime(time,"%Y-%m-%dT%H:%M")
-
-        professor_obj, student_obj, subject_obj  = professorsList.filter_by(id=professor_id).first(), studentsList.filter_by(id=student_id).first(), subjectsList.filter_by(id=subject_id).first()
-        flash(f"Hey",'info')
-        # return redirect(url_for('events.search_event'))
-    return render_template('events/search_event.html',time=time, title='Search Event',professorsList=professorsList, subjectsList=subjectsList, studentsList=studentsList)
-

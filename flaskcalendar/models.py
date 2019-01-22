@@ -1,4 +1,4 @@
-# TODO: Search page with parameters
+# TODO: Search page events / pages
 # TODO: Create events only with professor's subjects
 # TODO: Link with students / professors for alerts
 # TODO: Cleanup HTML
